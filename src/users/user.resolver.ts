@@ -6,6 +6,7 @@ import {
 } from './dt0s/create-account.dto';
 import { UserService } from './user.service';
 import { error } from 'console';
+import { LoginInput, LoginOutput } from './dt0s/login.dto';
 
 @Resolver((of) => User)
 export class UsersResolver {
@@ -31,6 +32,17 @@ export class UsersResolver {
       return {
         error,
         ok: false,
+      };
+    }
+  }
+  @Mutation((returns) => LoginOutput)
+  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
+    try {
+      return await this.userService.login(loginInput);
+    } catch (error) {
+      return {
+        ok: false,
+        error,
       };
     }
   }
