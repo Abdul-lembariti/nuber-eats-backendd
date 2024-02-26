@@ -40,6 +40,7 @@ export class User extends CoreEntity {
   @Field((type) => Boolean)
   verified: boolean;
 
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {

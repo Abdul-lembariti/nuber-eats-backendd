@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 
@@ -32,7 +31,7 @@ export class UserService {
     role,
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
-      const exists = await this.users.findOneBy({ email });
+      const exists = await this.users.findOne({ where: { email } });
       if (exists) {
         return { ok: false, error: 'There is a user with that email already' };
       }
@@ -86,34 +85,29 @@ export class UserService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.users.findOneBy({ id });
-      if (user) {
-        return {
-          ok: true,
-          user: user,
-        };
-      }
+      const user = await this.users.findOneOrFail({ where: { id } });
+      return {
+        ok: true,
+        user,
+      };
     } catch (error) {
       return { ok: false, error: 'User Not Found' };
     }
   }
 
   async editProfile(
-    id: number,
+    userId: number,
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
-      const user = await this.users.findOneBy({ id });
-      if (!user) {
-        return { ok: false, error: 'User not found.' };
-      }
+      const user = await this.users.findOne({ where: { id: userId } });
       if (email) {
         user.email = email;
         user.verified = false;
         const verification = await this.verifications.save(
           this.verifications.create({ user }),
         );
-        // this.mailService.sendVerificationEmail(user.email, verification.code);
+        this.mailService.sendVerificationEmail(user.email, verification.code);
       }
       if (password) {
         user.password = password;
