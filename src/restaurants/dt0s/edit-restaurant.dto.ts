@@ -1,18 +1,12 @@
-import {
-  Field,
-  InputType,
-  ObjectType,
-  PartialType,
-  PickType,
-} from '@nestjs/graphql';
-import { Restaurant } from '../entitie/restaurants.enitites';
-import { CreateRestaurantInputType } from './create-restaurants.dto';
+import { Field, InputType, ObjectType, PartialType } from '@nestjs/graphql';
 import { MutationOutput } from '../../common/dtos/output.dto';
+import { CreateRestaurantInput } from './create-restaurants.dto';
 
 @InputType()
-export class EditRestaurantInput extends PartialType(
-  CreateRestaurantInputType,
-) {}
+export class EditRestaurantInput extends PartialType(CreateRestaurantInput) {
+  @Field((type) => Number)
+  restaurantId: number;
+}
 
 @ObjectType()
 export class EditRestaurantOutput extends MutationOutput {}

@@ -10,7 +10,7 @@ import { Restaurant } from '../entitie/restaurants.enitites';
 import { MutationOutput } from '../../common/dtos/output.dto';
 
 @InputType()
-export class CreateRestaurantInputType extends PickType(Restaurant, [
+export class CreateRestaurantInput extends PickType(Restaurant, [
   'name',
   'address',
   'coverImg',
@@ -20,4 +20,4 @@ export class CreateRestaurantInputType extends PickType(Restaurant, [
 }
 
 @ObjectType()
-export class CreateRestaurantOutputType extends MutationOutput {}
+export class CreateRestaurantOutput extends MutationOutput {}
