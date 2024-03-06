@@ -20,6 +20,7 @@ import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verfication.entity';
 import { MailModule } from './mail/mail.module';
 import { Category } from './restaurants/entitie/category.entity';
+import { Dish } from './restaurants/entitie/dish.entity';
 
 @Module({
   imports: [
@@ -57,7 +58,7 @@ import { Category } from './restaurants/entitie/category.entity';
       database: 'db.sqlite',
       synchronize: true,
       logging: true,
-      entities: [User, Verification, Restaurant, Category],
+      entities: [User, Verification, Restaurant, Category, Dish],
     }),
 
     GraphQLModule.forRoot<ApolloDriverConfig>({
