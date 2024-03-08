@@ -21,6 +21,9 @@ import { Verification } from './users/entities/verfication.entity';
 import { MailModule } from './mail/mail.module';
 import { Category } from './restaurants/entitie/category.entity';
 import { Dish } from './restaurants/entitie/dish.entity';
+import { OrdersModule } from './orders/orders.module';
+import { Order } from './orders/entities/order.enitity';
+import { OrderItem } from './orders/entities/order-item.entity';
 
 @Module({
   imports: [
@@ -56,9 +59,17 @@ import { Dish } from './restaurants/entitie/dish.entity';
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',
-      synchronize: true,
-      logging: true,
-      entities: [User, Verification, Restaurant, Category, Dish],
+      synchronize: process.env.NODE_ENV !== 'prod',
+      logging: process.env.NODE_ENV !== 'prod',
+      entities: [
+        User,
+        Verification,
+        Restaurant,
+        Category,
+        Dish,
+        Order,
+        OrderItem,
+      ],
     }),
 
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -77,6 +88,7 @@ import { Dish } from './restaurants/entitie/dish.entity';
     AuthModule,
     UsersModule,
     RestaurantsModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [],
