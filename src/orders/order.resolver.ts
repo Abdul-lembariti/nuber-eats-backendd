@@ -1,20 +1,52 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+import { AuthUser } from '../auth/auth-user.decorator';
+import { Role } from '../auth/role.decorator';
+import { User, UserRole } from '../users/entities/user.entity';
+import { CreateOrderOutput, CreateOrderInput } from './dto/create-order.dto';
+import { EditOrderOutput, EditOrderInput } from './dto/edit-order.dto';
+import { GetOrdersOutput, GetOrdersInput } from './dto/get-order.dto';
+import { GetOrderOutput, GetOrderInput } from './dto/get-orders.dto';
 import { Order } from './entities/order.enitity';
 import { OrderService } from './order.service';
-import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
-import { AuthUser } from '../auth/auth-user.decorator';
-import { User } from '../users/entities/user.entity';
 
 @Resolver((of) => Order)
 export class OrderResolver {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly ordersService: OrderService) {}
 
   @Mutation((returns) => CreateOrderOutput)
+  @Role([UserRole.Client])
   async createOrder(
     @AuthUser() customer: User,
     @Args('input')
     createOrderInput: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
-    return this.orderService.creaetOrder(customer, createOrderInput);
+    return this.ordersService.crateOrder(customer, createOrderInput);
+  }
+
+  @Query((returns) => GetOrdersOutput)
+  @Role('Any')
+  async getOrders(
+    @AuthUser() user: User,
+    @Args('input') getOrdersInput: GetOrdersInput,
+  ): Promise<GetOrdersOutput> {
+    return this.ordersService.getOrders(user, getOrdersInput);
+  }
+
+  @Query((returns) => GetOrderOutput)
+  @Role('Any')
+  async getOrder(
+    @AuthUser() user: User,
+    @Args('input') getOrderInput: GetOrderInput,
+  ): Promise<GetOrderOutput> {
+    return this.ordersService.getOrder(user, getOrderInput);
+  }
+
+  @Mutation((returns) => EditOrderOutput)
+  @Role('Any')
+  async editOrder(
+    @AuthUser() user: User,
+    @Args('input') editOrderInput: EditOrderInput,
+  ): Promise<EditOrderOutput> {
+    return this.ordersService.editOrder(user, editOrderInput);
   }
 }
