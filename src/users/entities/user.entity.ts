@@ -18,6 +18,8 @@ export enum UserRole {
   Delivery = 'Delivery',
 }
 
+export type Allowed = UserRole[] | 'Any' | string;
+
 registerEnumType(UserRole, { name: 'UserRole' });
 
 @InputType('UserInputType', { isAbstract: true })

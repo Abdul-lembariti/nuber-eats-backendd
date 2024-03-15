@@ -123,7 +123,9 @@ export class OrderService {
           },
           relations: ['orders'],
         });
-        orders = restaurants.map((restaurant) => restaurant.orders).flat(1);
+        orders = restaurants
+          .map((restaurant) => restaurant.orders)
+          .reduce((prev, next) => prev.concat(next), []);
         if (status) {
           orders = orders.filter((order) => order.status === status);
         }
@@ -132,7 +134,8 @@ export class OrderService {
         ok: true,
         orders,
       };
-    } catch {
+    } catch (error) {
+      console.error(error);
       return {
         ok: false,
         error: 'Could not get orders',
@@ -161,7 +164,7 @@ export class OrderService {
     try {
       const order = await this.orders.findOne({
         where: { id: orderId },
-        relations: ['Restaurant'],
+        relations: ['restaurant'], // Corrected relation name to 'restaurant'
       });
       if (!order) {
         return {
@@ -181,7 +184,7 @@ export class OrderService {
         order,
       };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return {
         ok: false,
         error: 'Could not load order.',
@@ -196,7 +199,7 @@ export class OrderService {
     try {
       const order = await this.orders.findOne({
         where: { id: orderId },
-        relations: ['Restaurant'],
+        relations: ['restaurant'], // Ensure to include 'restaurant' relation
       });
       if (!order) {
         return {
@@ -207,7 +210,7 @@ export class OrderService {
       if (!this.canSeeOrder(user, order)) {
         return {
           ok: false,
-          error: "Can't see this.",
+          error: "Can't see this Order",
         };
       }
       let canEdit = true;
@@ -243,11 +246,13 @@ export class OrderService {
         ok: true,
       };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return {
         ok: false,
         error: 'Could not edit order.',
       };
     }
   }
+
+  
 }

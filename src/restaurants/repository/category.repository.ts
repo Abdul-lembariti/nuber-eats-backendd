@@ -1,5 +1,5 @@
-import { EntityRepository, Repository } from "typeorm";
-import { Category } from "../entitie/category.entity";
+import { EntityRepository, Repository } from 'typeorm';
+import { Category } from '../entitie/category.entity';
 
 @EntityRepository(Category)
 export class CategoryRepository extends Repository<Category> {
@@ -18,7 +18,7 @@ export class CategoryRepository extends Repository<Category> {
       return category;
     } catch (error) {
       console.error('Error in getOrCreate:', error);
-      throw error; 
+      throw error;
     }
   }
 }

@@ -6,9 +6,12 @@ import { OrderResolver } from './order.resolver';
 import { Restaurant } from '../restaurants/entitie/restaurants.enitites';
 import { OrderItem } from './entities/order-item.entity';
 import { Dish } from '../restaurants/entitie/dish.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, Restaurant, OrderItem, Dish])],
+  imports: [
+    TypeOrmModule.forFeature([Order, Restaurant, OrderItem, Dish, UsersModule]),
+  ],
   providers: [OrderService, OrderResolver],
 })
 export class OrdersModule {}

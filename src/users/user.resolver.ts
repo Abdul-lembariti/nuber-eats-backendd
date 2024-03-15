@@ -32,12 +32,12 @@ export class UserResolver {
   }
 
   @Query((returns) => User)
-  @Role('Any')
+  @Role(['Any'])
   me(@AuthUser() authUser: User) {
     return authUser;
   }
 
-  @Role('Any')
+  @Role(['Any'])
   @Query((returns) => UserProfileOutput)
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
@@ -45,7 +45,7 @@ export class UserResolver {
     return this.usersService.findById(userProfileInput.userId);
   }
 
-  @Role('Any')
+  @Role(['Any'])
   @Mutation((returns) => EditProfileOutput)
   async editProfile(
     @AuthUser() authUser: User,

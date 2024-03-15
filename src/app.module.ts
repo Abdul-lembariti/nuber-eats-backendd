@@ -1,10 +1,5 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
+import { Module, UnauthorizedException } from '@nestjs/common';
+import { GraphQLModule, Subscription } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -33,29 +28,9 @@ import { OrderItem } from './orders/entities/order-item.entity';
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod', 'test').required(),
-        //  DB_HOST: Joi.string().required(),
-        // DB_PORT: Joi.string().required(),
-        // DB_USERNAME: Joi.string().required(),
-        // DB_PASSWORD: Joi.string().required(),
-        // DB_NAME: Joi.string().required(),
-        // SECRET_KEY: Joi.string().required(),
-        // MAILGUN_API_KEY: Joi.string().required(),
-        // FROMEMAIL: Joi.string().required(),
-        // DOMAIN: Joi.string().required(),
+        // Add your validation rules here
       }),
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'postgres',
-    //   host: 'localhost',
-    //   port: 5432,
-    //   username: 'Admin',
-    //   password: 'Admin',
-    //   database: 'NuberEats',
-    //   synchronize: process.env.NODE_ENV !== 'prod',
-    //   logging: process.env.NODE_ENV !== 'prod',
-    //   entities: [User, Verification, Restaurant, Category],
-    // }),
-
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'db.sqlite',
@@ -72,11 +47,18 @@ import { OrderItem } from './orders/entities/order-item.entity';
       ],
     }),
 
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRoot({
+      installSubscriptionHandlers: true,
       autoSchemaFile: true,
       driver: ApolloDriver,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req, connection }) => {
+        const TOKEN_KEY = 'x-jwt';
+        return {
+          token: req ? req.headers[TOKEN_KEY] : connection.context[TOKEN_KEY],
+        };
+      },
     }),
+
     JwtModule.forRoot({
       privateKey: 'VHtIWhB0DjrRGNlN5j8Ywf2943OaLxZt',
     }),
@@ -89,15 +71,9 @@ import { OrderItem } from './orders/entities/order-item.entity';
     UsersModule,
     RestaurantsModule,
     OrdersModule,
+    CommonModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes({
-      path: '/graphql',
-      method: RequestMethod.POST,
-    });
-  }
-}
+export class AppModule {}
