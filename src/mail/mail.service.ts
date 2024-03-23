@@ -1,9 +1,7 @@
-import got from 'got';
-import * as FormData from 'form-data';
-import Mailgun from 'mailgun.js';
 import { Inject, Injectable } from '@nestjs/common';
 import { CONFIG_OPTIONS } from 'src/common/common.const';
 import { MailModuleOption, MailVar } from './mail.inter';
+import Mailgun from 'mailgun.js';
 
 @Injectable()
 export class MailService {
@@ -13,59 +11,132 @@ export class MailService {
 
   async sendEmail(
     subject: string,
-    template: string,
+    htmlContent: string,
     mailVars: MailVar[],
   ): Promise<boolean> {
-    const form = new FormData();
-    form.append(
-      'from',
-      `Nahul from Nuber Eats <mailgun@${this.options.domain}>`,
-    );
-    // due to no payment
-    form.append('to', `abdullembariti2005@gmail.com`);
-    form.append('subject', subject);
-    form.append('template', template);
-    mailVars.forEach((eVar) => form.append(eVar.key, eVar.value));
+    const mg = new Mailgun(FormData);
+    const mailgun = mg.client({
+      username: 'api',
+      key: this.options.apiKey,
+    });
+
+    let replacedHtmlContent = htmlContent;
+    mailVars.forEach((mailVar) => {
+      const regex = new RegExp(`{{${mailVar.key}}}`, 'g');
+      replacedHtmlContent = replacedHtmlContent.replace(regex, mailVar.value);
+    });
+
+    const data = {
+      from: `Nahuk from Nuber Eats <mailgun@${this.options.domain}>`,
+      to: `abdullembariti2005@gmail.com`,
+      subject: subject,
+      html: replacedHtmlContent,
+    };
+
     try {
-      await got.post(
-        `https://api.mailgun.net/v3/${this.options.domain}/messages`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Basic ${Buffer.from(
-              `api:${this.options.apiKey}`,
-            ).toString('base64')}`,
-          },
-          body: form,
-        },
-      );
+      await mailgun.messages.create(this.options.domain, data);
       return true;
     } catch (err) {
+      console.error(err);
       return false;
     }
   }
 
   sendVerificationEmail(email: string, code: string) {
-    this.sendEmail('Verify Your Email', 'nuber eats', [
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html  style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+    <head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Please Confirm Email</title>
+    <style type="text/css">
+    img {
+    max-width: 100%;
+    }
+    body {
+    -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;
+    }
+    body {
+    background-color: #f6f6f6;
+    }
+    @media only screen and (max-width: 640px) {
+      body {
+        padding: 0 !important;
+      }
+      h1 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h2 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h3 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h4 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h1 {
+        font-size: 22px !important;
+      }
+      h2 {
+        font-size: 18px !important;
+      }
+      h3 {
+        font-size: 16px !important;
+      }
+      .container {
+        padding: 0 !important; width: 100% !important;
+      }
+      .content {
+        padding: 0 !important;
+      }
+      .content-wrap {
+        padding: 10px !important;
+      }
+      .invoice {
+        width: 100% !important;
+      }
+    }
+    </style>
+    </head>
+    
+    <body itemscope itemtype="http://schema.org/EmailMessage" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
+    
+    <table class="body-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
+        <td class="container" width="600" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;" valign="top">
+          <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
+            <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #FF9F00; margin: 0; padding: 20px;" align="center" bgcolor="#FF9F00" valign="top">
+            Please Confirm your Email
+                </td>
+              </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        Hello! ${email} <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">   Please confirm your account!
+                      </td>
+                    </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+            Please confirm your account!
+                      </td>
+                    </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        <a href="http://localhost:3000/confirm?code=${code}" class="btn-primary" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">Verify Your Email</a>
+                      </td>
+                    </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        Thanks for choosing Nuber Eats.
+                      </td>
+                    </tr></table></td>
+              </tr></table><div class="footer" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">
+              <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top"><a href="http://www.mailgun.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Subscribe</a> from these alerts.</td>
+                </tr></table></div></div>
+        </td>
+        <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
+      </tr></table></body>
+    </html>
+    `;
+
+    const mailVars: MailVar[] = [
       { key: 'code', value: code },
       { key: 'username', value: email },
-    ]);
+    ];
+
+    this.sendEmail('Verify Your Email', htmlContent, mailVars);
   }
 }
-
-/* NODE METHOD  // const mailgun = new Mailgun(FormData);
-    // const mg = mailgun.client({
-    //   username: 'api',
-    //   key: this.options.apiKey,
-    // });
-
-    // mg.messages
-    //   .create(this.options.domain, {
-    //     from: 'Excited User <mailgun@sandbox841dec421a7a4acda9d765a568c248a4.mailgun.orgsandbox-123.mailgun.org>',
-    //     to: ['abdullembariti2005@gmail.com'],
-    //     subject: 'Hello',
-    //     text: 'Testing some Mailgun awesomeness!',
-    //     html: '<h1>Testing some Mailgun awesomeness!</h1>',
-    //   })
-    //   .then((msg) => console.log(msg)) 
-    //   .catch((err) => console.log(err)); */

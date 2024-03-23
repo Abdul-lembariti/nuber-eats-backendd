@@ -31,7 +31,6 @@ import { ScheduleModule } from '@nestjs/schedule';
       ignoreEnvFile: process.env.NODE_ENV === 'prod',
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'prod', 'test').required(),
-        // Add your validation rules here
       }),
     }),
     TypeOrmModule.forRoot({
@@ -52,8 +51,19 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
 
     GraphQLModule.forRoot({
-      installSubscriptionHandlers: true,
       autoSchemaFile: true,
+      cors: {
+        origin: [
+          'http://localhost:3000',
+          'http://127.0.0.1:3000',
+          'https://studio.apollographql.com',
+        ],
+        credentials: true,
+      },
+      introspection: true,
+      playground: true,
+      installSubscriptionHandlers: true,
+      connectToDevTools: true,
       driver: ApolloDriver,
       context: ({ req, connection }) => {
         const TOKEN_KEY = 'x-jwt';
@@ -62,14 +72,15 @@ import { ScheduleModule } from '@nestjs/schedule';
         };
       },
     }),
+
     ScheduleModule.forRoot(),
     JwtModule.forRoot({
       privateKey: 'VHtIWhB0DjrRGNlN5j8Ywf2943OaLxZt',
     }),
     MailModule.forRoot({
-      apiKey: process.env.MAILGUN_API_KEY,
-      domain: process.env.DOMAIN,
-      fromEmail: process.env.FROMEMAIL,
+      apiKey: '1485f3d73723630e87edea445a38b896-309b0ef4-173d60e7',
+      domain: 'sandbox75959a9de82a423e95116b8af8deddbb.mailgun.org',
+      fromEmail: 'ca987829@gmail.com',
     }),
     AuthModule,
     UsersModule,

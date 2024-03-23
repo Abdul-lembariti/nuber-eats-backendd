@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
+import { User, UserRole } from 'src/users/entities/user.entity';
 import { ILike, Like, Repository } from 'typeorm';
 import { CategoryRepository } from './repository/category.repository';
 import { Restaurant } from './entitie/restaurants.enitites';
@@ -30,6 +30,7 @@ import { CreateDishInput, CreateDishOutput } from './dt0s/createDish.dto';
 import { Dish } from './entitie/dish.entity';
 import { EditDishInput, EditDishOutput } from './dt0s/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dt0s/delete-dish.dto';
+import { MyRestaurantsOutput } from './dt0s/myRestaurants.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -232,7 +233,7 @@ export class RestaurantService {
         page = 1;
       }
 
-      const take = 25;
+      const take = 3;
       const skip = (page - 1) * take;
 
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
@@ -427,6 +428,21 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not delete',
+      };
+    }
+  }
+
+  async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurants.find({ where: { owner } });
+      return {
+        restaurants,
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not find restaurants.',
       };
     }
   }

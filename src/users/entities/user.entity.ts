@@ -36,8 +36,8 @@ export class User extends CoreEntity {
   @Field((type) => String)
   password: string;
 
-  @Column({ type: 'varchar', length: 20 })
-  @Field((type) => String)
+  @Column({ type: 'varchar', length: 20, enum: UserRole })
+  @Field((type) => UserRole)
   @IsEnum(UserRole)
   role: UserRole;
 
