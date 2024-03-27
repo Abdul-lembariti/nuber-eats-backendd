@@ -2,6 +2,7 @@ import {
   ArgsType,
   Field,
   InputType,
+  Int,
   ObjectType,
   OmitType,
   PickType,
@@ -20,4 +21,7 @@ export class CreateRestaurantInput extends PickType(Restaurant, [
 }
 
 @ObjectType()
-export class CreateRestaurantOutput extends MutationOutput {}
+export class CreateRestaurantOutput extends MutationOutput {
+  @Field((type) => Int)
+  restaurantId?: number;
+}

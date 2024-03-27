@@ -17,7 +17,10 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dt0s/edit-restaurant.dto';
-import { CreateRestaurantInput } from './dt0s/create-restaurants.dto';
+import {
+  CreateRestaurantInput,
+  CreateRestaurantOutput,
+} from './dt0s/create-restaurants.dto';
 import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
@@ -36,17 +39,18 @@ import { CreateDishInput, CreateDishOutput } from './dt0s/createDish.dto';
 import { EditDishInput, EditDishOutput } from './dt0s/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dt0s/delete-dish.dto';
 import { MyRestaurantsOutput } from './dt0s/myRestaurants.dto';
+import { MyRestaurantInput, MyRestaurantOutput } from './dt0s/my-restaurant.dto';
 
 @Resolver((of) => Restaurant)
 export class RestaurantsResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
-  @Mutation((returns) => CreateAccountOutput)
+  @Mutation((returns) => CreateRestaurantOutput)
   @Role([UserRole.Owner])
   async createRestaurant(
     @AuthUser() authUser: User,
     @Args('input') createRestaurantInput: CreateRestaurantInput,
-  ): Promise<CreateAccountOutput> {
+  ): Promise<CreateRestaurantOutput> {
     return this.restaurantService.createRestaurant(
       authUser,
       createRestaurantInput,
@@ -62,12 +66,6 @@ export class RestaurantsResolver {
     return this.restaurantService.editRestaurant(authUser, editRestaurantInput);
   }
 
-  @Query((returns) => MyRestaurantsOutput)
-  @Role(['Owner'])
-  myRestaurants(@AuthUser() owner: User): Promise<MyRestaurantsOutput> {
-    return this.restaurantService.myRestaurants(owner);
-  }
-
   @Mutation((returns) => DeleteRestaurantOutput)
   @Role([UserRole.Owner])
   deleteRestaurant(
@@ -79,6 +77,18 @@ export class RestaurantsResolver {
       deleteRestaurantInput,
     );
   }
+
+  @Query((returns) => MyRestaurantsOutput)
+  @Role(['Owner'])
+  myRestaurants(@AuthUser() owner: User): Promise<MyRestaurantsOutput> {
+    return this.restaurantService.myRestaurants(owner);
+  }
+
+@Query(returns => MyRestaurantOutput)
+@Role(['Owner'])
+myRestaurant(@AuthUser() owner: User, @Args('input') myRestaurantInput:MyRestaurantInput):Promise<MyRestaurantOutput>{
+  return this.restaurantService.myRestaurant(owner,myRestaurantInput)
+}
 
   @Query((returns) => RestaurantsOutput)
   restaurants(

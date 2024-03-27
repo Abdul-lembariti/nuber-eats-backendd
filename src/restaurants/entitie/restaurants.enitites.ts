@@ -58,5 +58,5 @@ export class Restaurant extends CoreEntity {
 
   @Field((type) => Date, { nullable: true })
   @Column({ nullable: true })
-  promtedUntil?: Date;
+  promotedUntil: Date;
 }

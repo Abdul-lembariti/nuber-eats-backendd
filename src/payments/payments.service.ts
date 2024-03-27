@@ -51,7 +51,7 @@ export class PaymentsService {
       restaurant.isPromoted = true;
       const date = new Date();
       date.setDate(date.getDate() + 7);
-      restaurant.promtedUntil = date;
+      restaurant.promotedUntil = date;
       this.restaurant.save(restaurant);
       await this.payments.save(
         this.payments.create({
@@ -93,12 +93,12 @@ export class PaymentsService {
   @Interval(2000)
   async checkPromotedRestaurants() {
     const restaurant = await this.restaurant.find({
-      where: { isPromoted: true, promtedUntil: LessThan(new Date()) },
+      where: { isPromoted: true, promotedUntil: LessThan(new Date()) },
     });
     console.log(restaurant);
     restaurant.forEach(async (restaurant) => {
       restaurant.isPromoted = false;
-      restaurant.promtedUntil = null;
+      restaurant.promotedUntil = null;
       await this.restaurant.save(restaurant);
     });
   }

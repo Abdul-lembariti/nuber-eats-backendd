@@ -31,6 +31,10 @@ import { Dish } from './entitie/dish.entity';
 import { EditDishInput, EditDishOutput } from './dt0s/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dt0s/delete-dish.dto';
 import { MyRestaurantsOutput } from './dt0s/myRestaurants.dto';
+import {
+  MyRestaurantInput,
+  MyRestaurantOutput,
+} from './dt0s/my-restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -72,6 +76,7 @@ export class RestaurantService {
       await this.restaurants.save(newRestaurant);
       return {
         ok: true,
+        restaurantId: newRestaurant.id,
       };
     } catch (error) {
       return {
@@ -204,7 +209,7 @@ export class RestaurantService {
       }
       const restaurants = await this.restaurants.find({
         where: {
-          category,
+          category: category,
         },
         order: {
           isPromoted: 'DESC',
@@ -215,7 +220,7 @@ export class RestaurantService {
       const totalResults = await this.countRestaurants(category);
       return {
         ok: true,
-        restaurants,
+        restaurants: restaurants,
         category,
         totalPages: Math.ceil(totalResults / 25),
       };
@@ -434,15 +439,50 @@ export class RestaurantService {
 
   async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
     try {
-      const restaurants = await this.restaurants.find({ where: { owner } });
+      const ownerId = owner.id;
+      console.log('User', ownerId);
+
+      const restaurants = await this.restaurants.find({
+        where: { owner: { id: ownerId } },
+      });
+
+      if (restaurants.length === 0) {
+        return {
+          restaurants: [], // Return an empty array if no restaurants found
+          ok: true,
+          error: 'Could not findRestaurants',
+        };
+      }
       return {
         restaurants,
+        ok: true,
+      };
+    } catch (error) {
+      console.error('Error fetching restaurants:', error.message);
+      return {
+        ok: false,
+        error: 'Could not find restaurants.',
+      };
+    }
+  }
+
+  async myRestaurant(
+    owner: User,
+    { id }: MyRestaurantInput,
+  ): Promise<MyRestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne({
+        where: { owner: { id: owner.id }, id },
+        relations: ['menu', 'orders'],
+      });
+      return {
+        restaurant,
         ok: true,
       };
     } catch {
       return {
         ok: false,
-        error: 'Could not find restaurants.',
+        error: 'Could not find restaurant',
       };
     }
   }
